@@ -4,6 +4,7 @@ import { ConfigModule } from './shared/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { DepartmentModule } from './modules/department/department.module';
 import { RoleModule } from './modules/role/role.module';
+import { PromptModule } from './modules/prompt/prompt.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { RoleModule } from './modules/role/role.module';
     TelegramModule,
     DepartmentModule,
     RoleModule,
+    PromptModule,
   ],
   controllers: [],
   providers: [],

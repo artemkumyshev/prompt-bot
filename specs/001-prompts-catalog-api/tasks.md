@@ -59,10 +59,10 @@
 
 **Independent Test**: CRUD промптов через API; списки возвращают items + meta; фильтры и search работают; при несоответствии role/department — 400/409.
 
-- [ ] T016 [P] [US2] Создать DTO для Prompt: CreatePromptDto, UpdatePromptDto, ListPromptQueryDto и валидаторы JSON-полей (rules, key_references, criteria, evaluationRubric по контрактам data-model.md) в src/modules/prompt/dto/
-- [ ] T017 [US2] Реализовать PromptService: CRUD, список с departmentId/roleId/search (ILIKE), пагинация/sort; GET по id с include department и role; при create/update проверять role.departmentId === departmentId → иначе 400/409 в src/modules/prompt/prompt.service.ts
-- [ ] T018 [US2] Реализовать PromptController: GET /api/prompts, GET /api/prompts/:id, POST, PATCH :id, DELETE :id в src/modules/prompt/prompt.controller.ts
-- [ ] T019 [US2] Создать PromptModule и зарегистрировать в src/app.module.ts
+- [x] T016 [P] [US2] Создать DTO для Prompt: CreatePromptDto, UpdatePromptDto, ListPromptQueryDto и валидаторы JSON-полей (rules, key_references, criteria, evaluationRubric по контрактам data-model.md) в src/modules/prompt/dto/
+- [x] T017 [US2] Реализовать PromptService: CRUD, список с departmentId/roleId/search (ILIKE), пагинация/sort; GET по id с include department и role; при create/update проверять role.departmentId === departmentId → иначе 400/409 в src/modules/prompt/prompt.service.ts
+- [x] T018 [US2] Реализовать PromptController: GET /api/prompts, GET /api/prompts/:id, POST, PATCH :id, DELETE :id в src/modules/prompt/prompt.controller.ts
+- [x] T019 [US2] Создать PromptModule и зарегистрировать в src/app.module.ts
 
 ---
 

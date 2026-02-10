@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Department {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   name        String   @unique
   description String?
   icon        String?
@@ -20,7 +20,7 @@ model Department {
 }
 
 model Role {
-  id           String   @id @default(uuid())
+  id           String   @id @default(cuid())
   departmentId String
   name         String
   description  String?
@@ -36,20 +36,20 @@ model Role {
 }
 
 model Prompt {
-  id              String   @id @default(uuid())
-  name            String
-  icon            String?
-  prompt          String
-  task            String
+  id               String   @id @default(cuid())
+  name             String
+  icon             String?
+  prompt           String
+  task             String
   task_description String
-  departmentId    String
-  roleId          String
-  rules           Json     @default("[]")
-  key_references  Json     @default("[]")
-  criteria        Json     @default("[]")
-  evaluationRubric Json    @default("{}")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  departmentId     String
+  roleId           String[]
+  rules            String[] @default([])
+  key_references   String[] @default([])
+  criteria         String[] @default([])
+  evaluationRubric String[] @default([])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   department Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
   role       Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
