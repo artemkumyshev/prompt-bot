@@ -1,4 +1,4 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { PaginatedResponseDto } from '../../shared/common/paginated-response.dto';
@@ -7,6 +7,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { ListRoleQueryDto } from './dto/list-role-query.dto';
 import { Role } from '@prisma/client';
 
+@Injectable()
 export class RoleService {
   constructor(private readonly prisma: PrismaService) {}
 

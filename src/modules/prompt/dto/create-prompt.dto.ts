@@ -85,11 +85,11 @@ export class CreatePromptDto {
   @MinLength(10, { message: 'task_description: минимум 10 символов' })
   task_description: string;
 
-  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655430000' })
   @IsUUID()
   departmentId: string;
 
-  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440001' })
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655430001' })
   @IsUUID()
   roleId: string;
 

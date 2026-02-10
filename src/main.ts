@@ -25,7 +25,7 @@ async function bootstrap() {
     .addTag('prompts', 'Промпты')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(process.env.SWAGGER_PATH ?? 'api/docs', app, document);
+  SwaggerModule.setup(process.env.SWAGGER_PATH ?? 'docs', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
 }

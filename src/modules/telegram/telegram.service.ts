@@ -18,7 +18,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
             return;
         }
 
-        this.bot = new Bot(botToken as string);
+        this.bot = new Bot(botToken);
         this.bot.command('start', async (ctx: Context) => await this.handleStart(ctx));
 
         try {

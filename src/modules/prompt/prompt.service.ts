@@ -1,7 +1,8 @@
 import {
   BadRequestException,
-  NotFoundException,
   ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
@@ -14,6 +15,7 @@ type PromptWithRelations = Prisma.PromptGetPayload<{
   include: { department: { select: { id: true; name: true } }; role: { select: { id: true; name: true } } };
 }>;
 
+@Injectable()
 export class PromptService {
   constructor(private readonly prisma: PrismaService) {}
 

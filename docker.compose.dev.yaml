@@ -1,0 +1,56 @@
+# Development: PostgreSQL + приложение с live reload
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: prompt-bot_dev_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/prompt_bot
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/usr/src/app/src:cached
+      - ./prisma:/usr/src/app/prisma:cached
+      - ./tsconfig.json:/usr/src/app/tsconfig.json:cached
+      - ./tsconfig.build.json:/usr/src/app/tsconfig.build.json:cached
+      - ./nest-cli.json:/usr/src/app/nest-cli.json:cached
+      - /usr/src/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Waiting for DB...';
+        sleep 3;
+        npx prisma migrate deploy || true;
+        echo 'Starting dev server...';
+        npm run start:dev
+      "
+
+  db:
+    image: postgres:16-alpine
+    container_name: prompt-bot_dev_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: prompt_bot
+    volumes:
+      - dev_db_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  dev_db_data:
