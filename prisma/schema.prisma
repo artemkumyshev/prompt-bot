@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  icon        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles   Role[]
+  prompts Prompt[]
+}
+
+model Role {
+  id           String   @id @default(uuid())
+  departmentId String
+  name         String
+  description  String?
+  icon         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  prompts    Prompt[]
+
+  @@unique([departmentId, name])
+  @@index([departmentId])
+}
+
+model Prompt {
+  id              String   @id @default(uuid())
+  name            String
+  icon            String?
+  prompt          String
+  task            String
+  task_description String
+  departmentId    String
+  roleId          String
+  rules           Json     @default("[]")
+  key_references  Json     @default("[]")
+  criteria        Json     @default("[]")
+  evaluationRubric Json    @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@index([departmentId])
+  @@index([roleId])
+  @@index([name])
+  @@index([updatedAt])
+}

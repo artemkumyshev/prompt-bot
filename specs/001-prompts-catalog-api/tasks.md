@@ -29,11 +29,11 @@
 
 **Purpose**: Схема БД, Prisma, глобальная валидация и формат ошибок. Без этого фазы US1–US3 не начинать.
 
-- [ ] T004 Описать Prisma-схему: модели Department, Role, Prompt (поля и индексы по data-model.md) в prisma/schema.prisma
-- [ ] T005 Выполнить prisma migrate dev (первая миграция) и создать PrismaService + PrismaModule в src/prisma/prisma.service.ts и src/prisma/prisma.module.ts
-- [ ] T006 Подключить глобальный ValidationPipe (whitelist: true, forbidNonWhitelisted: true, transform: true) в src/main.ts
-- [ ] T007 Реализовать Prisma Exception Filter: маппинг ошибок Prisma в { statusCode, message, errorCode, details } и зарегистрировать глобально в src/filters/prisma-exception.filter.ts
-- [ ] T008 Добавить общие типы/DTO: PaginatedResponseDto (items + meta), базовый query DTO (page, pageSize, sortBy, sortOrder с дефолтами updatedAt/desc) в src/common/
+- [x] T004 Описать Prisma-схему: модели Department, Role, Prompt (поля и индексы по data-model.md) в prisma/schema.prisma
+- [x] T005 Выполнить prisma migrate dev (первая миграция) и создать PrismaService + PrismaModule в src/prisma/prisma.service.ts и src/prisma/prisma.module.ts
+- [x] T006 Подключить глобальный ValidationPipe (whitelist: true, forbidNonWhitelisted: true, transform: true) в src/main.ts
+- [x] T007 Реализовать Prisma Exception Filter: маппинг ошибок Prisma в { statusCode, message, errorCode, details } и зарегистрировать глобально в src/filters/prisma-exception.filter.ts
+- [x] T008 Добавить общие типы/DTO: PaginatedResponseDto (items + meta), базовый query DTO (page, pageSize, sortBy, sortOrder с дефолтами updatedAt/desc) в src/common/
 
 ---
 
