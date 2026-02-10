@@ -10,11 +10,13 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { PromptService } from './prompt.service';
 import { CreatePromptDto } from './dto/create-prompt.dto';
 import { UpdatePromptDto } from './dto/update-prompt.dto';
 import { ListPromptQueryDto } from './dto/list-prompt-query.dto';
 
+@ApiTags('prompts')
 @Controller('prompts')
 export class PromptController {
   constructor(private readonly promptService: PromptService) {}

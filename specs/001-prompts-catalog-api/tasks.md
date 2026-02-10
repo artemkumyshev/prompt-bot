@@ -72,8 +72,8 @@
 
 **Independent Test**: Все эндпоинты в Swagger; при невалидном теле — 400 VALIDATION_ERROR; при дубликате — 409 UNIQUE_CONSTRAINT; при несуществующем id — 404 NOT_FOUND.
 
-- [ ] T020 [US3] Подключить Swagger (DocumentBuilder, SwaggerModule) с base path /api и путём /api/docs в src/main.ts
-- [ ] T021 [P] [US3] Добавить ApiProperty и примеры (для rules, key_references, criteria, evaluationRubric) ко всем DTO в src/modules/department/dto/, src/modules/role/dto/, src/modules/prompt/dto/
+- [x] T020 [US3] Подключить Swagger (DocumentBuilder, SwaggerModule) с base path /api и путём /api/docs в src/main.ts
+- [x] T021 [P] [US3] Добавить ApiProperty и примеры (для rules, key_references, criteria, evaluationRubric) ко всем DTO в src/modules/department/dto/, src/modules/role/dto/, src/modules/prompt/dto/
 
 ---
 
