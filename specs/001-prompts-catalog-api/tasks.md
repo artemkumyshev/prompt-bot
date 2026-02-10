@@ -19,9 +19,9 @@
 
 **Purpose**: Зависимости, инфраструктура БД, базовая структура каталога.
 
-- [ ] T001 Добавить зависимости: @prisma/client, prisma, class-validator, class-transformer, @nestjs/swagger в package.json и установить (npm install)
-- [ ] T002 Добавить docker-compose.yml для PostgreSQL и обновить .env.example (DATABASE_URL, PORT, SWAGGER_PATH) в корне репозитория
-- [ ] T003 Создать структуру каталогов: src/prisma/, src/common/, src/filters/, src/modules/department/dto/, src/modules/role/dto/, src/modules/prompt/dto/
+- [x] T001 Добавить зависимости: @prisma/client, prisma, class-validator, class-transformer, @nestjs/swagger в package.json и установить (npm install)
+- [x] T002 Добавить docker-compose.yml для PostgreSQL и обновить .env.example (DATABASE_URL, PORT, SWAGGER_PATH) в корне репозитория
+- [x] T003 Создать структуру каталогов: src/prisma/, src/common/, src/filters/, src/modules/department/dto/, src/modules/role/dto/, src/modules/prompt/dto/
 
 ---
 
