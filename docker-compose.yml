@@ -16,5 +16,17 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build: .
+    container_name: prompt-bot-app
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/prompt_bot
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
