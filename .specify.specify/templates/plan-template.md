@@ -18,4 +18,4 @@
 
 ## Acceptance
 
-- [ ] Definition of Done (constitution §14) satisfied
+- [ ] Definition of Done (constitution §12) satisfied

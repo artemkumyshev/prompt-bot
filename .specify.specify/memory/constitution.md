@@ -1,21 +1,17 @@
 <!--
 Sync Impact Report
-- Version: (none) → 1.0.0
-- Initial constitution for Backend API каталога промптов (Department / Role / Prompt).
-- Modified principles: N/A (initial)
-- Added sections: Mission, Context, Non-Goals, Architecture Principles, Data Model,
-  API Contracts, Validation, Security, Reliability, Code Style, Migrations, Data Portability,
-  Testing, Spec-Kit, Definition of Done, Default Decisions, Governance.
-- Removed sections: none
-- Templates: ✅ constitution-template.md, plan-template.md, spec-template.md, tasks-template.md
-  created and aligned with constitution. commands/* — ⚠ pending (optional).
-- Follow-up TODOs: Add command-specific templates under commands/ if using Spec-Kit commands.
+- Version: 1.0.0 → 2.0.0
+- Modified principles: Mission (refined), Architecture (NestJS modules + Prisma), Data Model (Role optional departmentId, JSONB), API (page/pageSize, sortBy/sortOrder), Validation, Security (removed auth), Testing (no tests), DoD (Prisma, Swagger, seed), Default Decisions.
+- Added sections: Stack (§1), API design (§2), Data model principles (§3), NestJS structure (§4), Validation & integrity (§5), Lists/filters (§6), Swagger (§7), Errors (§8), Migrations & seed (§9), Docker (§10), NFR (§11), DoD (§12), Constraints (§13).
+- Removed sections: Spec-Kit Specific (merged into workflow note); separate Security as auth removed; Rate limiting (not in scope).
+- Templates: ✅ plan-template.md (DoD §12), spec-template.md (refs §2,§3,§5–§8), tasks-template.md (Swagger, tests out of scope). specs/001-prompts-catalog-api/* — ⚠ рекомендуется выровнять под Prisma, page/pageSize, без auth.
+- Follow-up TODOs: При реализации Phase 1+ обновить spec.md и tasks.md под Prisma, Docker, Swagger, пагинацию page/pageSize и отсутствие X-Admin-Key.
 -->
 
 # Constitution: Prompt Bot Backend API
 
 **Project:** prompt-bot.lc — Backend API для каталога промптов (Department / Role / Prompt)  
-**Constitution Version:** 1.0.0  
+**Constitution Version:** 2.0.0  
 **Ratification Date:** 2025-02-10  
 **Last Amended:** 2025-02-10
 
@@ -23,281 +19,209 @@ Sync Impact Report
 
 ## 0. Mission
 
-Сделать надёжный и удобный backend, который:
+Построить стабильный и простой Backend API для управления каталогом промптов и их метаданными (department, role, prompt), чтобы локальный «личный кабинет» мог получать, создавать и обновлять данные через HTTP API.
 
-- хранит и отдаёт структурированные промпты и справочники (department, role),
-- обеспечивает чистый и предсказуемый REST API для локального личного кабинета,
-- масштабируется по данным и функциональности без переписываний.
+**Ключевой фокус:** предсказуемая модель данных, корректные связи, строгая валидация входящих данных, удобные списки/фильтры/сортировки, понятная документация (Swagger).
 
----
-
-## 1. Context and Key Scenarios
-
-### Primary scenarios
-
-1. **Admin (локальный кабинет)** создаёт/редактирует/удаляет:
-   - departments,
-   - roles,
-   - prompts.
-2. **Client (в будущем: Telegram-бот / публичный UI)** читает каталог:
-   - список департаментов и ролей,
-   - списки промптов с фильтрами,
-   - детальную карточку промпта.
-3. **Импорт/экспорт (на будущее):**
-   - выгрузка промптов в JSON для бэкапа, миграций, версий.
-
-### Implicit requirements
-
-- Консистентность схемы данных: промпт связан с role и department.
-- Удобная фильтрация и пагинация.
-- Версионирование и мягкая эволюция схемы без поломок клиентов.
+**Не делаем:** авторизация, роли пользователей, платежи, тесты, внешние интеграции.
 
 ---
 
-## 2. Non-Goals (Out of Scope at Start)
+## 1. Stack and Base Decisions
 
-- Генерация ответов LLM (никаких вызовов OpenAI и т.п.).
-- Сложная RBAC и множество ролей пользователей — только базовый доступ для кабинета.
-- Мультиязычность как отдельная сущность (локализованные поля допустимы позже).
-- Сложный workflow approval/review для промптов.
-
----
-
-## 3. Architecture Principles
-
-### 3.1 API-first
-
-- Сначала определяем контракты (DTO, схемы, примеры), затем реализация.
-- Все изменения API MUST быть обратно-совместимыми или вводиться через версию (например `/api/v2`).
-
-### 3.2 Layered architecture
-
-- **Controller/Transport:** приём запроса, валидация DTO, формирование response.
-- **Service/UseCases:** бизнес-логика (фильтры, связи, правила обновления).
-- **Repository/DB:** доступ к данным.
-- **Domain/Model:** сущности и инварианты.
-
-### 3.3 Identifiers and relations
-
-- ID — UUID (предпочтительно) или автоинкремент; единообразие по всем сущностям.
-- Prompt MUST иметь `roleId` и `departmentId` (обязательные связи).
-- При удалении role/department:
-  - по умолчанию: удаление запрещено, если есть связанные prompts (ответ 409 Conflict),
-  - альтернатива (на будущее): soft-delete или каскад.
+- **Runtime:** Node.js + TypeScript  
+- **Framework:** NestJS  
+- **ORM:** Prisma  
+- **DB:** PostgreSQL  
+- **Контейнеризация:** Docker / docker-compose  
+- **Документация API:** Swagger (NestJS OpenAPI)  
+- **Валидация:** class-validator + class-transformer  
+- **Логирование:** встроенный Nest Logger + структурированные сообщения  
 
 ---
 
-## 4. Data Model (Primary)
+## 2. API Design Principles
 
-### 4.1 Department
+### 2.1 REST and predictability
 
-- `id`: string (UUID)
-- `name`: string (уникальный в пределах системы, case-insensitive)
-- `description`: string (optional)
-- `icon`: string (optional; имя иконки / emoji / URL)
+- REST-эндпоинты и стандартные HTTP-коды:
+  - **200 / 201** — успешные ответы
+  - **400** — ошибка валидации/формата
+  - **404** — не найдено
+  - **409** — конфликт уникальности
+  - **500** — непредвиденная ошибка
+- Ответы всегда в JSON.
+- Ошибки — в едином формате.
 
-### 4.2 Role
+### 2.2 Explicit contracts
 
-- `id`: string (UUID)
-- `name`: string (уникальный, case-insensitive)
+- DTO обязательны для всех входящих данных (Create / Update).
+- Валидация DTO через ValidationPipe: `whitelist=true`, `forbidNonWhitelisted=true`, `transform=true`.
+- На чтение допускаются query-параметры для пагинации, сортировки и фильтрации.
+
+### 2.3 No “magic” fields
+
+- Поля и типы фиксированы схемой Prisma.
+- Списковые поля (rules, keyReferences, criteria, evaluationRubric) хранятся так, чтобы ими было удобно управлять и при необходимости версионировать.
+
+---
+
+## 3. Data Model and Relations (Principles)
+
+### 3.1 Department
+
+- `id`: UUID (генерируется БД/Prisma)
+- `name`: string (unique)
 - `description`: string (optional)
 - `icon`: string (optional)
 
-### 4.3 Prompt
+### 3.2 Role
 
-- `id`: string (UUID)
+- `id`: UUID
+- `name`: string (unique в рамках системы; рекомендуется unique в связке с departmentId)
+- `description`: string (optional)
+- `icon`: string (optional)
+- **Связь:** Role привязана к Department (`role.departmentId`). Иначе фильтрация и UX в кабинете размыты. Решение зафиксировать в Prisma-схеме.
+
+### 3.3 Prompt
+
+- `id`: UUID
 - `name`: string
 - `icon`: string (optional)
-- `prompt`: string (основной текст промпта)
-- `departmentId`: string (FK)
-- `roleId`: string (FK)
+- `prompt`: text (основная инструкция)
 - `task`: string
-- `task_description`: string
-- `rules`: Rule[] (массив)
-- `key_references`: KeyReference[] (массив)
-- `criteria`: Criteria[] (массив)
-- `evaluationRubric`: EvaluationRubric (object или массив)
+- `taskDescription`: text (optional)
+- `roleId`: UUID (FK)
+- `departmentId`: UUID (FK)
 
-#### Nested structures (recommended shapes)
+**Списочные поля (в API — camelCase):** `rules[]`, `keyReferences[]`, `criteria[]`, `evaluationRubric[]`.
 
-- **Rule:** `{ id, text, order }` или `{ key, text }`
-- **KeyReference:** `{ title, author, year, keyInsights: string[] }`
-- **Criteria:** `{ id, name, description }`
-- **EvaluationRubric:** либо `Record<string, string>` (ключи "1".."10"), либо массив `{ score: number | string, description: string }`
-
-Вложенные структуры MUST быть валидируемыми и сохраняемыми в БД. Допускается хранение в JSONB (PostgreSQL).
+**Хранение:** JSONB — баланс скорость/простота для MVP. Если понадобится поиск по вложенным данным — нормализовать позже.
 
 ---
 
-## 5. API Contracts (Conventions)
+## 4. NestJS Architecture (Required Structure)
 
-### 5.1 Versioning
+- **Модули:** `modules/department`, `modules/role`, `modules/prompt`
+- В каждом модуле: `*.module.ts`, `*.controller.ts`, `*.service.ts`, `dto/`; при необходимости — `*.repository.ts`
+- **Общее:** `common/`, `prisma/prisma.service.ts`, `filters/`, `pipes/`, `interceptors/`, `types/`
 
-- Базовый префикс: `/api/v1`.
-
-### 5.2 Response format
-
-- Success: `200` с данными, `201` при создании, `204` при удалении без тела.
-- Error (единый формат):
-
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Readable message",
-    "details": [{ "path": "field", "issue": "..." }]
-  }
-}
-```
-
-### 5.3 Pagination and filters (списки)
-
-- `GET /prompts?departmentId=&roleId=&q=&limit=&offset=&sort=`
-- `q` — поиск по name и (опционально) по task/prompt (FTS — решение позже).
-- Сортировка по умолчанию: зафиксировать одно из `updatedAt DESC` или `name ASC`.
-
-### 5.4 Endpoints (минимальный набор)
-
-**Departments**
-
-- GET /departments
-- POST /departments
-- GET /departments/:id
-- PATCH /departments/:id
-- DELETE /departments/:id
-
-**Roles**
-
-- GET /roles
-- POST /roles
-- GET /roles/:id
-- PATCH /roles/:id
-- DELETE /roles/:id
-
-**Prompts**
-
-- GET /prompts
-- POST /prompts
-- GET /prompts/:id
-- PATCH /prompts/:id
-- DELETE /prompts/:id
-
-**Admin / ops**
-
-- GET /meta (версия API, билд, время)
-- GET /health (liveness)
-- GET /ready (readiness, при наличии БД)
+**Принцип:** Controller тонкий; вся логика в Service. Доступ к БД через PrismaService (или репозитории при выделении слоя).
 
 ---
 
-## 6. Validation and Invariants
+## 5. Validation and Data Integrity
 
-- Все входные DTO MUST валидироваться до входа в сервис-слой.
-- Инварианты:
-  - `department.name` и `role.name` уникальны (case-insensitive).
-  - `prompt.departmentId` и `prompt.roleId` MUST существовать.
-  - `prompt.prompt`, `prompt.name`, `prompt.task` не пустые.
-  - `rules` имеют стабильный порядок (explicit order или порядок массива сохраняется как есть).
-- Любое нарушение — понятная ошибка с полем `details`.
+### 5.1 Input validation
 
----
+- `name`: trim, min/max длина
+- `icon`: строка (URL или имя иконки; правило фиксируем)
+- `prompt` / `task` / `taskDescription`: minLen, maxLen
 
-## 7. Security
+### 5.2 Uniqueness
 
-### 7.1 Admin authentication
+- `Department.name` — unique
+- `Role.name` — unique (или unique вместе с departmentId)
+- При конфликте — **409** с понятным сообщением
 
-- На старте достаточно: API Key в заголовке `X-Admin-Key`, значение из env.
-- Альтернатива: Basic Auth (API key предпочтительнее для простоты).
-- Публичные read-endpoints могут быть без auth по решению; admin CRUD — только с auth.
+### 5.3 Relations
 
-### 7.2 CORS
-
-- Разрешаем только `http://localhost:*` и при необходимости конкретные origin.
-- В проде запрещаем `*`.
-
-### 7.3 Rate limiting
-
-- Минимальный лимит на публичные endpoints при их появлении.
-- Для админки — мягче.
+- Prompt нельзя создать, если `roleId` или `departmentId` не существуют.
+- При удалении department/role: **запрещаем удаление, если есть связанные prompts (409)**. Каскадное удаление не применяем, чтобы не терять данные в админке.
 
 ---
 
-## 8. Reliability and Observability
+## 6. Lists, Filters, Sort, Pagination
 
-- Структурированные логи (JSON) с: requestId, method, path, status, время ответа.
-- Ошибки: stacktrace не возвращаем клиенту; stacktrace пишем в лог.
-- Метрики (опционально на старте): хотя бы базовый timing.
+### 6.1 Pagination
 
----
+- Query: `page`, `pageSize`
+- Ответ: `items` + `meta` (page, pageSize, total)
 
-## 9. Code Style and DX
+### 6.2 Sort
 
-- TypeScript strict.
-- `any` не использовать в доменной и сервисной логике.
-- Обязательны: единый форматтер (Prettier), ESLint для стабильности.
-- Именование: переменные/поля — camelCase; таблицы/колонки — по стандарту ORM (фиксируется один раз).
-- DTO и сущности не смешивать: DTO = контракт API; Entity/Model = домен/БД.
+- `sortBy` (например: name, createdAt, updatedAt)
+- `sortOrder` (asc / desc)
 
----
+### 6.3 Filters (prompts)
 
-## 10. Migrations and Data Compatibility
+- `departmentId`
+- `roleId`
+- `search` (по name + task + prompt, базовый ILIKE)
 
-- Любое изменение схемы — через миграции.
-- JSON-поля (rules, key_references, criteria, evaluationRubric) эволюционируют осторожно: добавляем поля, не ломаем существующие; при смене структуры — миграция данных или версионирование поля.
+**Принцип:** все query-параметры валидируются и приводятся к нужным типам.
 
 ---
 
-## 11. Data and Portability
+## 7. Documentation (Swagger) — Mandatory
 
-- Экспорт/импорт (future-ready):
-  - GET /export/prompts.json (админ) — для бэкапа.
-  - Импорт — CLI-скриптом (без API), чтобы не усложнять безопасность.
-
----
-
-## 12. Testing (Pragmatic)
-
-- На старте допускается минимум:
-  - контрактные проверки DTO (валидация),
-  - smoke-tests на основные CRUD (5–10 сценариев).
-- Если принципиально без тестов — обязателен ручной чеклист регрессии на каждый релиз.
+- Все DTO покрыты декораторами Swagger.
+- Примеры (example) для сложных JSONB-полей (rules, keyReferences, criteria, evaluationRubric) добавляются сразу.
 
 ---
 
-## 13. Spec-Kit Specific
+## 8. Errors and Exceptions
 
-- Spec-driven подход:
-  1. описание API и моделей (Specify),
-  2. фиксация критериев приёмки (Acceptance),
-  3. затем реализация.
-- Любое изменение начинается с обновления спеки, затем код.
+- Ошибки Prisma преобразуются в человекочитаемые (через Exception Filter).
+- Единый формат ответа об ошибке:
+  - `statusCode`
+  - `message`
+  - `errorCode` (например: VALIDATION_ERROR, UNIQUE_CONSTRAINT, NOT_FOUND)
+  - `details` (опционально)
 
 ---
 
-## 14. Definition of Done
+## 9. Migrations and Seed
+
+- **Prisma migrations** — источник истины для схемы.
+- **Seed** обязателен:
+  - минимум 1 department, 1 role, 1 prompt, чтобы локальный кабинет сразу мог работать;
+  - seed идемпотентен (повторный запуск не ломает БД).
+
+---
+
+## 10. Docker and Local Run
+
+- docker-compose поднимает Postgres.
+- Backend запускается локально (npm/yarn/pnpm) и подключается к БД в контейнере.
+- Переменные окружения: `DATABASE_URL`, `PORT`, при необходимости `SWAGGER_PATH`.
+
+**Принцип:** один шаг — поднять инфраструктуру, один шаг — запустить API.
+
+---
+
+## 11. Non-Functional Requirements
+
+- Быстрые ответы на списки: индексы на name, departmentId, roleId.
+- Логи без персональных данных (в текущем scope их нет).
+- Стабильность важнее «красоты»; никаких абстракций ради абстракций.
+
+---
+
+## 12. Definition of Done (Backend)
 
 Фича считается готовой, если:
 
-- есть чёткий контракт (DTO + примеры),
-- реализованы endpoint’ы и валидация,
-- ошибки стандартизированы,
-- CRUD работает для всех трёх сущностей (Department, Role, Prompt),
-- добавлены минимальные health/meta,
-- обновлена документация API (Swagger/OpenAPI или markdown).
+- Prisma schema и миграции обновлены
+- CRUD-эндпоинты работают
+- Валидация DTO есть
+- Swagger обновлён и отражает реальный контракт
+- Seed обновлён (если нужно)
+- Ошибки возвращаются в едином формате
 
 ---
 
-## 15. Default Decisions
+## 13. Explicit Constraints
 
-- Вложенные структуры prompt хранятся в JSONB.
-- Уникальность `name` для department и role.
-- Удаление role/department при наличии связанных prompts — запрещено (409 Conflict).
-- Админ-доступ через заголовок `X-Admin-Key`.
+- **Нет авторизации:** эндпоинты не защищены
+- **Нет тестов:** компенсируем строгой валидацией и ручными проверками через Swagger / HTTP-клиент
+- Нет фоновых задач и очередей
+- Нет версионирования API (пока)
 
 ---
 
-## 16. Governance
+## 14. Governance
 
 - **Amendments:** изменения конституции вносятся через явное обновление этого файла с инкрементом версии и обновлением Last Amended.
 - **Versioning:** семантическое версионирование (MAJOR — несовместимые изменения принципов/контрактов, MINOR — новые принципы/секции, PATCH — уточнения, опечатки).
-- **Compliance:** при реализации фич и рефакторинге решения MUST соответствовать принципам и контрактам, описанным выше; расхождения фиксируются и либо вносятся в конституцию, либо явно документируются как исключения с обоснованием.
+- **Compliance:** при реализации фич и рефакторинге решения MUST соответствовать описанным принципам; расхождения либо вносятся в конституцию, либо документируются как исключения с обоснованием.

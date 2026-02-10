@@ -8,7 +8,7 @@
 - [ ] Repository / DB
 - [ ] Validation & invariants
 - [ ] Observability (logging, errors)
-- [ ] Tests (smoke / contract)
+- [ ] Swagger / documentation (constitution §7; tests out of scope per §13)
 
 ## Task list
 

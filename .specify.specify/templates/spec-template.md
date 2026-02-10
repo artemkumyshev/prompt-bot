@@ -2,7 +2,7 @@
 
 ## Constitution alignment
 
-- References: `.specify.specify/memory/constitution.md` (§4 Data Model, §5 API Contracts, §6 Validation)
+- References: `.specify.specify/memory/constitution.md` (§3 Data Model, §2 API Design, §5 Validation, §6 Lists/Pagination, §7 Swagger, §8 Errors)
 - Scope/requirements must not contradict constitution principles or default decisions.
 
 ## API / Contract
