@@ -1,98 +1,158 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Prompt Bot · Каталог промптов
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend API для каталога промптов: справочники отделов и ролей, CRUD промптов с фильтрами, пагинацией и единым форматом ошибок.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Возможности
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Отделы (Departments)** — CRUD, список с поиском и сортировкой
+- **Роли (Roles)** — CRUD с привязкой к отделу, проверка зависимостей при удалении
+- **Промпты (Prompts)** — CRUD с полями `rules`, `key_references`, `criteria`, `evaluationRubric` (JSON), фильтры по отделу/роли, поиск по тексту
+- **Swagger** — интерактивная документация по адресу `/api/docs`
+- **Валидация** — единый формат ответов об ошибках (в т.ч. Prisma: 404, 409, валидация тела)
 
-## Project setup
+---
 
-```bash
-$ npm install
-```
+## Стек
 
-## Compile and run the project
+| Технология | Назначение |
+|------------|------------|
+| **NestJS** | API, модули, пайпы, фильтры |
+| **Prisma** | ORM, миграции, типы |
+| **PostgreSQL** | База данных |
+| **class-validator / class-transformer** | DTO и валидация |
+| **Swagger (OpenAPI)** | Документация API |
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+## Требования
 
-# production mode
-$ npm run start:prod
-```
+- **Node.js** (LTS, рекомендуется 18+)
+- **Docker** и **Docker Compose** — для PostgreSQL и опционально для запуска приложения в контейнере
+- **npm**
 
-## Run tests
+---
+
+## Быстрый старт
+
+### Вариант 1: Всё в Docker
+
+Поднять PostgreSQL и приложение одной командой:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+make docker-up
 ```
 
-## Deployment
+- API: **http://localhost:3000/api**
+- Swagger: **http://localhost:3000/api/docs**
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Миграции применяются при старте контейнера приложения. Тестовые данные (seed) можно добавить с хоста:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/prompt_bot" make db-seed
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Вариант 2: Разработка (БД в Docker, приложение локально)
 
-## Resources
+```bash
+# Поднять только PostgreSQL
+docker compose up -d postgres
 
-Check out a few resources that may come in handy when working with NestJS:
+# Настроить окружение
+cp .env.example .env
+# Отредактировать .env: DATABASE_URL, при необходимости PORT
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# Зависимости, миграции, seed
+make install
+make db-migrate-deploy
+make db-seed
 
-## Support
+# Запуск с hot-reload
+make dev
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+После запуска откройте **http://localhost:3000/api/docs** (или свой `PORT`).
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Переменные окружения
 
-## License
+| Переменная | Описание | Пример |
+|------------|----------|--------|
+| `DATABASE_URL` | Строка подключения к PostgreSQL | `postgresql://postgres:postgres@localhost:5432/prompt_bot` |
+| `PORT` | Порт HTTP-сервера | `3000` |
+| `SWAGGER_PATH` | Путь к Swagger UI | `api/docs` (по умолчанию) |
+| `TELEGRAM_BOT_TOKEN` | Токен бота (если используется Telegram) | — |
+| `TELEGRAM_BOT_NAME` | Имя бота | — |
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Файл **.env** создаётся из **.env.example**; для локальной разработки обязательно задайте `DATABASE_URL`.
+
+---
+
+## API
+
+Базовый путь: **`/api`**.
+
+| Ресурс | Эндпоинты |
+|--------|-----------|
+| **Departments** | `GET/POST /api/departments`, `GET/PATCH/DELETE /api/departments/:id` |
+| **Roles** | `GET/POST /api/roles`, `GET/PATCH/DELETE /api/roles/:id` |
+| **Prompts** | `GET/POST /api/prompts`, `GET/PATCH/DELETE /api/prompts/:id` |
+
+Списки поддерживают пагинацию (`page`, `pageSize`), сортировку (`sortBy`, `sortOrder`) и, где предусмотрено, фильтры и поиск. Полное описание запросов и ответов — в Swagger: **http://localhost:3000/api/docs**.
+
+---
+
+## Команды Make
+
+Удобные цели для повседневной работы (подробнее: `make help`):
+
+| Команда | Описание |
+|---------|----------|
+| `make help` | Список всех команд с описаниями |
+| `make docker-up` | Запустить Docker (postgres + app) |
+| `make docker-down` | Остановить контейнеры |
+| `make docker-logs` | Логи контейнеров |
+| `make db-migrate` | Миграции (dev) |
+| `make db-migrate-deploy` | Миграции (deploy) |
+| `make db-seed` | Заполнить БД тестовыми данными |
+| `make db-studio` | Открыть Prisma Studio |
+| `make dev` | Запуск приложения с hot-reload |
+| `make build` | Сборка проекта |
+| `make start` | Запуск собранного приложения |
+| `make lint` | Проверка кода (ESLint) |
+| `make format` | Форматирование (Prettier) |
+| `make type-check` | Проверка типов (TypeScript) |
+| `make generate` | Сгенерировать Prisma Client |
+
+Команды для БД (`db-migrate`, `db-seed`, `db-studio`, `db-reset`) требуют наличия файла **.env** с корректным **DATABASE_URL**.
+
+---
+
+## Структура проекта
+
+```
+├── prisma/
+│   ├── schema.prisma    # Модели Department, Role, Prompt
+│   ├── migrations/      # Миграции
+│   └── seed.ts          # Идемпотентный seed (1 отдел, 1 роль, 1 промпт)
+├── src/
+│   ├── main.ts          # Точка входа, Swagger, ValidationPipe, Prisma filter
+│   ├── common/          # Общие DTO (пагинация, list-query)
+│   ├── filters/         # Prisma Exception Filter
+│   ├── prisma/          # PrismaService, PrismaModule
+│   └── modules/
+│       ├── department/  # CRUD отделов
+│       ├── role/        # CRUD ролей
+│       └── prompt/      # CRUD промптов (с JSON-полями)
+├── docker-compose.yml   # PostgreSQL + приложение
+├── Dockerfile           # Multi-stage сборка приложения
+└── Makefile             # Команды для сборки, БД и разработки
+```
+
+---
+
+## Лицензия
+
+UNLICENSED (приватный репозиторий).
