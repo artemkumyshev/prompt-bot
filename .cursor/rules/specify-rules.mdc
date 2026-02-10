@@ -1,0 +1,29 @@
+# prompt-bot.lc Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2026-02-10
+
+## Active Technologies
+
+- TypeScript (Node.js LTS) + NestJS, Prisma, class-validator, class-transformer, @nestjs/swagger (001-prompts-catalog-api)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+npm test && npm run lint
+
+## Code Style
+
+TypeScript (Node.js LTS): Follow standard conventions
+
+## Recent Changes
+
+- 001-prompts-catalog-api: Added TypeScript (Node.js LTS) + NestJS, Prisma, class-validator, class-transformer, @nestjs/swagger
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
