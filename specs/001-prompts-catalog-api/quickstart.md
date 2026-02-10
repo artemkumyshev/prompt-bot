@@ -62,6 +62,16 @@ npm run start:dev
 - **Swagger**: открыть в браузере `http://localhost:<PORT>/api/docs`
 - **Health/readiness**: при наличии эндпоинтов GET /health, GET /ready — проверить доступность и (для ready) подключение к БД
 
+### Чеклист приёмки (T023)
+
+1. `docker compose up -d` — контейнер postgres запущен.
+2. В `.env` задан `DATABASE_URL` (например из `.env.example`).
+3. `npx prisma migrate deploy` — миграции применены без ошибок.
+4. `npx prisma db seed` — seed выполнен (идемпотентно); в БД есть минимум 1 department, 1 role, 1 prompt.
+5. `npm run start` — приложение слушает порт (например 3000).
+6. В браузере открыть `http://localhost:<PORT>/api/docs` — Swagger отображается.
+7. В Swagger проверить CRUD: GET/POST/PATCH/DELETE для `/api/departments`, `/api/roles`, `/api/prompts` (создание промпта с валидными `departmentId` и `roleId` из seed).
+
 ## Итог
 
 - Один шаг — поднять инфраструктуру (docker-compose).

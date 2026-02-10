@@ -81,8 +81,8 @@
 
 **Purpose**: Seed и проверка по quickstart.
 
-- [ ] T022 Реализовать идемпотентный seed: 1 department, 1 role, 1 prompt (upsert по уникальным полям), контракты JSON-полей в prisma/seed.ts и добавить "prisma": { "seed": "..." } в package.json
-- [ ] T023 Проверить сценарий quickstart: docker-compose up, prisma migrate deploy, prisma db seed, npm run start, открыть /api/docs и пройти CRUD по всем ресурсам
+- [x] T022 Реализовать идемпотентный seed: 1 department, 1 role, 1 prompt (upsert по уникальным полям), контракты JSON-полей в prisma/seed.ts и добавить "prisma": { "seed": "..." } в package.json
+- [x] T023 Проверить сценарий quickstart: docker-compose up, prisma migrate deploy, prisma db seed, npm run start, открыть /api/docs и пройти CRUD по всем ресурсам
 
 ---
 

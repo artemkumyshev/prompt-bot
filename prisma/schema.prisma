@@ -43,11 +43,11 @@ model Prompt {
   task             String
   task_description String
   departmentId     String
-  roleId           String[]
-  rules            String[] @default([])
-  key_references   String[] @default([])
-  criteria         String[] @default([])
-  evaluationRubric String[] @default([])
+  roleId           String
+  rules            Json     @default("[]")
+  key_references   Json     @default("[]")
+  criteria         Json     @default("[]")
+  evaluationRubric Json     @default("{}")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
