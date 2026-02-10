@@ -80,15 +80,27 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     if (exception && typeof exception === 'object' && 'getStatus' in exception) {
       const httpException = exception as { getStatus: () => number; message: string; getResponse: () => unknown };
       const status = httpException.getStatus();
-      const res = httpException.getResponse();
-      const message = typeof res === 'object' && res !== null && 'message' in (res as object)
-        ? (res as { message: string | string[] }).message
-        : httpException.message;
+      const res = httpException.getResponse() as Record<string, unknown> | string;
+      const resObj = typeof res === 'object' && res !== null ? res : {};
+      const message = typeof resObj.message === 'string'
+        ? resObj.message
+        : Array.isArray(resObj.message)
+          ? resObj.message.join(', ')
+          : httpException.message;
+      const errorCode = typeof resObj.errorCode === 'string'
+        ? resObj.errorCode
+        : status === HttpStatus.BAD_REQUEST
+          ? 'VALIDATION_ERROR'
+          : status === HttpStatus.NOT_FOUND
+            ? 'NOT_FOUND'
+            : status === HttpStatus.CONFLICT
+              ? 'CONFLICT'
+              : 'ERROR';
       return {
         statusCode: status,
-        message: Array.isArray(message) ? message.join(', ') : message,
-        errorCode: status === HttpStatus.BAD_REQUEST ? 'VALIDATION_ERROR' : 'ERROR',
-        details: typeof res === 'object' && res !== null && 'error' in (res as object) ? (res as { error?: string }).error : undefined,
+        message,
+        errorCode,
+        details: resObj.details,
       };
     }
 
