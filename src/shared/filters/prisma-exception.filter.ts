@@ -78,8 +78,8 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     }
 
     if (exception && typeof exception === 'object' && 'getStatus' in exception) {
-      const httpException = exception as { getStatus: () => number; message: string; getResponse: () => unknown };
-      const status = httpException.getStatus();
+      const httpException = exception as { getStatus: () => HttpStatus; message: string; getResponse: () => unknown };
+      const status: HttpStatus = httpException.getStatus();
       const res = httpException.getResponse() as Record<string, unknown> | string;
       const resObj = typeof res === 'object' && res !== null ? res : {};
       const message = typeof resObj.message === 'string'
@@ -87,15 +87,18 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         : Array.isArray(resObj.message)
           ? resObj.message.join(', ')
           : httpException.message;
-      const errorCode = typeof resObj.errorCode === 'string'
-        ? resObj.errorCode
-        : status === HttpStatus.BAD_REQUEST
-          ? 'VALIDATION_ERROR'
-          : status === HttpStatus.NOT_FOUND
-            ? 'NOT_FOUND'
-            : status === HttpStatus.CONFLICT
-              ? 'CONFLICT'
-              : 'ERROR';
+      let errorCode: string;
+      if (typeof resObj.errorCode === 'string') {
+        errorCode = resObj.errorCode;
+      } else if (status === HttpStatus.BAD_REQUEST) {
+        errorCode = 'VALIDATION_ERROR';
+      } else if (status === HttpStatus.NOT_FOUND) {
+        errorCode = 'NOT_FOUND';
+      } else if (status === HttpStatus.CONFLICT) {
+        errorCode = 'CONFLICT';
+      } else {
+        errorCode = 'ERROR';
+      }
       return {
         statusCode: status,
         message,

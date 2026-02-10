@@ -1,23 +1,41 @@
 // Загружаем .env до инициализации Prisma Client (импорты поднимаются, поэтому через require)
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
+const path = require('path');
+const fs = require('fs');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const DEPARTMENT_NAME = 'Маркетинг';
+const DEPARTMENTS_JSON_PATH = path.join(__dirname, '..', 'src', 'shared', 'database', 'departments.json');
 const ROLE_NAME = 'Маркетинговый аналитик';
 const PROMPT_NAME = 'Пример промпта для отчёта';
 
 async function main() {
-  const department = await prisma.department.upsert({
-    where: { name: DEPARTMENT_NAME },
-    create: {
-      name: DEPARTMENT_NAME,
-      description: 'Отдел маркетинга',
-      icon: 'briefcase',
-    },
-    update: {},
+  // Отделы из departments.json (идемпотентно по name)
+  const departmentsJson = JSON.parse(
+    fs.readFileSync(DEPARTMENTS_JSON_PATH, 'utf-8'),
+  );
+  for (const d of departmentsJson) {
+    await prisma.department.upsert({
+      where: { name: d.name },
+      create: {
+        name: d.name,
+        description: d.description ?? null,
+        icon: d.icon ?? null,
+      },
+      update: {
+        description: d.description ?? null,
+        icon: d.icon ?? null,
+      },
+    });
+  }
+
+  const department = await prisma.department.findUnique({
+    where: { name: 'Маркетинг' },
   });
+  if (!department) {
+    throw new Error('Отдел "Маркетинг" не найден после загрузки departments.json');
+  }
 
   const role = await prisma.role.upsert({
     where: {

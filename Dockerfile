@@ -1,31 +1,50 @@
-FROM node:18-alpine AS builder
+# =============================================================================
+# Stage 1: Build
+# =============================================================================
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
-COPY tsconfig.json ./
-COPY nest-cli.json ./
-
+# Зависимости (кэш слоя при неизменных package*.json)
+COPY package.json package-lock.json* ./
 RUN npm ci
 
-COPY . .
+# Конфигурация и схема Prisma
+COPY tsconfig*.json nest-cli.json ./
+COPY prisma ./prisma/
 
 RUN npx prisma generate
+
+# Исходный код и сборка
+COPY src ./src/
 RUN npm run build
 
-FROM node:18-alpine AS production
+# Проверка точки входа (Nest с rootDir: src даёт dist/src/main.js)
+RUN test -f dist/src/main.js || (echo "Build output missing." && ls -laR dist && exit 1)
+
+# =============================================================================
+# Stage 2: Production
+# =============================================================================
+FROM node:20-alpine AS production
+
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001 -G nodejs
 
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=3000
 
-COPY package*.json ./
-RUN npm ci --only=production
+# Только production-зависимости
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev && npm cache clean --force
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/prisma ./prisma
+# Артефакты из builder
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
+
+USER nodejs
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]

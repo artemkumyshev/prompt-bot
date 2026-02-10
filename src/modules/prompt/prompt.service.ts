@@ -4,8 +4,8 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { PaginatedResponseDto } from '../../common/paginated-response.dto';
+import { PrismaService } from '../../shared/prisma/prisma.service';
+import { PaginatedResponseDto } from '../../shared/common/paginated-response.dto';
 import { CreatePromptDto } from './dto/create-prompt.dto';
 import { UpdatePromptDto } from './dto/update-prompt.dto';
 import { ListPromptQueryDto } from './dto/list-prompt-query.dto';
@@ -53,10 +53,10 @@ export class PromptService {
     };
   }
 
-  async create(dto: CreatePromptDto) {
+  async create(dto: CreatePromptDto): Promise<PromptWithRelations> {
     await this.ensureRoleBelongsToDepartment(dto.roleId, dto.departmentId);
     const json = this.toJsonSafe(dto.rules, dto.key_references, dto.criteria, dto.evaluationRubric);
-    return this.prisma.prompt.create({
+    const created = await this.prisma.prompt.create({
       data: {
         name: dto.name.trim(),
         icon: dto.icon?.trim() ?? null,
@@ -71,6 +71,7 @@ export class PromptService {
         evaluationRubric: json.evaluationRubric,
       },
     });
+    return this.findOne(created.id);
   }
 
   async findAll(query: ListPromptQueryDto) {
@@ -121,7 +122,7 @@ export class PromptService {
     return prompt;
   }
 
-  async update(id: string, dto: UpdatePromptDto) {
+  async update(id: string, dto: UpdatePromptDto): Promise<PromptWithRelations> {
     const existing = await this.prisma.prompt.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException('Промпт не найден');
@@ -135,7 +136,7 @@ export class PromptService {
 
     const json = this.toJsonSafe(dto.rules, dto.key_references, dto.criteria, dto.evaluationRubric);
 
-    return this.prisma.prompt.update({
+    await this.prisma.prompt.update({
       where: { id },
       data: {
         ...(dto.name !== undefined && { name: dto.name.trim() }),
@@ -151,6 +152,7 @@ export class PromptService {
         ...(dto.evaluationRubric !== undefined && { evaluationRubric: json.evaluationRubric }),
       },
     });
+    return this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {

@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { PaginatedResponseDto } from '../../common/paginated-response.dto';
+import { PrismaService } from '../../shared/prisma/prisma.service';
+import { PaginatedResponseDto } from '../../shared/common/paginated-response.dto';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { ListDepartmentQueryDto } from './dto/list-department-query.dto';

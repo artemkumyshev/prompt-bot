@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { PaginatedResponseDto } from '../../common/paginated-response.dto';
+import { PrismaService } from '../../shared/prisma/prisma.service';
+import { PaginatedResponseDto } from '../../shared/common/paginated-response.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { ListRoleQueryDto } from './dto/list-role-query.dto';
