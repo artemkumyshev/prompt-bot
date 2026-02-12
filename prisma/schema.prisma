@@ -12,11 +12,13 @@ model Department {
   name        String   @unique
   description String?
   icon        String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   roles   Role[]
   prompts Prompt[]
+
+  @@map("departments")
 }
 
 model Role {
@@ -25,14 +27,15 @@ model Role {
   name         String
   description  String?
   icon         String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   department Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
   prompts    Prompt[]
 
   @@unique([departmentId, name])
   @@index([departmentId])
+  @@map("roles")
 }
 
 model Prompt {
@@ -48,8 +51,8 @@ model Prompt {
   key_references   Json     @default("[]")
   criteria         Json     @default("[]")
   evaluationRubric Json     @default("{}")
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   department Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
   role       Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
@@ -58,4 +61,5 @@ model Prompt {
   @@index([roleId])
   @@index([name])
   @@index([updatedAt])
+  @@map("prompts")
 }

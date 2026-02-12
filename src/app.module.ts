@@ -4,19 +4,16 @@ import { ConfigModule } from './shared/config';
 import { DepartmentModule } from './modules/department/department.module';
 import { RoleModule } from './modules/role/role.module';
 import { PromptModule } from './modules/prompt/prompt.module';
-import { PrismaService } from './shared/prisma/prisma.service';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
     ConfigModule,
-    TelegramModule,
+    // TelegramModule,
     DepartmentModule,
     RoleModule,
     PromptModule,
   ],
-  controllers: [],
-  providers: [PrismaService],
-  exports: [PrismaService],
-
+  controllers: [AppController],
 })
 export class AppModule {}

@@ -10,3 +10,8 @@ coverage
 .vscode
 *.md
 specs
+docker.compose.yaml
+docker.compose.dev.yaml
+.dockerignore
+.DS_Store
+npm-debug.log
