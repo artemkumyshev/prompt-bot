@@ -8,6 +8,7 @@ import { UpdateCategoryDto } from "./dto/update-category.dto";
 export class CategoryService {
     constructor(private readonly prisma: PrismaService) { }
 
+    /** Создание новой категории. */
     async create(dto: CreateCategoryDto): Promise<Category> {
         const category = await this.prisma.category.findUnique({
             where: {
@@ -28,6 +29,7 @@ export class CategoryService {
         })
     }
 
+    /** Обновление категории. */
     async update(id: string, dto: UpdateCategoryDto): Promise<Category> {
         const category = await this.findById(id);
 
@@ -41,6 +43,7 @@ export class CategoryService {
         })
     }
 
+    /** Удаление категории. */
     async delete(id: string): Promise<void> {
         const category = await this.findById(id);
 
@@ -51,6 +54,7 @@ export class CategoryService {
         await this.prisma.category.delete({ where: { id } })
     }
 
+    /** Получение всех категорий. */
     async findAll(): Promise<Category[]> {
         return this.prisma.category.findMany({
             orderBy: {
@@ -59,6 +63,7 @@ export class CategoryService {
         })
     }
 
+    /** Получение категории по идентификатору. */
     async findById(id: string): Promise<Category> {
         const category = await this.prisma.category.findUnique({ where: { id } })
         if (!category) {
