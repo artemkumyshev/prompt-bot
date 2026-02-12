@@ -21,12 +21,7 @@ export class PersonaService {
         }
 
         return this.prisma.persona.create({
-            data: {
-                categoryId: dto.categoryId.trim(),
-                name: dto.name.trim(),
-                description: dto.description.trim(),
-                icon: dto.icon.trim(),
-            }
+            data: dto
         })
     }
 

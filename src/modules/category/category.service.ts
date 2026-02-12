@@ -21,11 +21,7 @@ export class CategoryService {
         }
 
         return this.prisma.category.create({
-            data: {
-                name: dto.name.trim(),
-                description: dto.description.trim(),
-                icon: dto.icon.trim(),
-            }
+            data: dto
         })
     }
 
