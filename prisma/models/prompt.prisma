@@ -1,0 +1,12 @@
+model Prompt {
+  id        String   @id @default(cuid())
+  personaId String
+  name      String   @unique
+  icon      String
+  prompt    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  persona   Persona  @relation(fields: [personaId], references: [id])
+
+  @@map("prompts")
+}

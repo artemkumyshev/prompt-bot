@@ -1,0 +1,13 @@
+model Persona {
+  id          String   @id @default(cuid())
+  categoryId  String
+  name        String   @unique
+  description String
+  icon        String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  category    Category @relation(fields: [categoryId], references: [id])
+  prompts     Prompt[]
+
+  @@map("personas")
+}
